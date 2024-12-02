@@ -1,0 +1,41 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.6'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.tracing'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'io.opentelemetry:opentelemetry-api'
+	implementation 'io.opentelemetry:opentelemetry-sdk'
+
+	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.10.0'
+
+	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+	runtimeOnly 'io.opentelemetry:opentelemetry-api-incubator:1.38.0-alpha'
+
+
+
+	// Logback for logging support
+	implementation 'org.springframework.boot:spring-boot-starter-logging'
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

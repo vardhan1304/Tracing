@@ -1,0 +1,66 @@
+version: "1.0"
+services:
+  elasticsearch:
+    build: elk/elasticsearch/
+    container_name: elasticsearch
+    restart: always
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      XPACK_MONITORING_ENABLE: false
+      xpack.security.enabled: false
+      ES_JAVA_OPTS: "-Xmx2g -Xms2g"
+      discovery.type: single-node
+      network.host: "0.0.0.0"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 30s
+      retries: 3
+      start_period: 60s
+      timeout: 30s
+    networks:
+      - elk-network
+
+  kibana:
+    build: elk/kibana/
+    container_name: kibana
+    restart: always
+    volumes:
+      - ./elk/kibana/config:/opt/kibana/config
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+
+  logstash:
+    build: elk/logstash/
+    container_name: logstash
+    restart: always
+    command: ["-f", "/etc/logstash/conf.d/"]
+    volumes:
+      - ./elk/logstash/config:/etc/logstash/conf.d
+    ports:
+      - "9600:9600"
+      - "5000:5000"
+      - "9999:9999"
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+
+  app:
+    build: .
+    restart: always
+    ports:
+      - "9097:9097"
+    depends_on:
+      - logstash
+    networks:
+      - elk-network
+
+networks:
+  elk-network:
+    driver: bridge
